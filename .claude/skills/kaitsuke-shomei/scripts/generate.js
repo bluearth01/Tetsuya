@@ -2,6 +2,7 @@
 /*
  * 買付証明書（不動産購入申込書）.docx ジェネレーター
  * 使い方: node generate.js params.json [出力先.docx]
+ * 設計方針: 常に A4 1ページ以内に収まるよう、余白・行間・文字サイズを圧縮。
  * params.json のキーは SKILL.md / params.sample.json を参照。
  */
 const fs = require('fs');
@@ -15,7 +16,7 @@ const border = { style: BorderStyle.SINGLE, size: 4, color: "888888" };
 const borders = { top: border, bottom: border, left: border, right: border };
 const SHADE = "DDEBF7";
 
-// 半角英数・記号 → 全角（金額・面積などを定型書式に合わせる用。任意）
+// 半角英数記号 → 全角（金額・面積などを定型書式に合わせる。任意）
 function toZenkaku(s) {
   if (s == null) return s;
   return String(s).replace(/[A-Za-z0-9!-/:-@\[-`{-~]/g, ch =>
@@ -28,25 +29,26 @@ function p(children, opts = {}) {
 }
 function leftTab(text) {
   return new Paragraph({
-    children: [new TextRun({ text: "\t" + text, font: FONT, size: 21 })],
+    children: [new TextRun({ text: "\t" + text, font: FONT, size: 20 })],
     tabStops: [{ type: TabStopType.LEFT, position: 5400 }],
+    spacing: { after: 20, line: 252 },
   });
 }
 
 function kvRow(k, v, opts = {}) {
+  const cellPara = (r) => new Paragraph({ children: [r], spacing: { before: 0, after: 0, line: 240 } });
   return new TableRow({ children: [
     new TableCell({ borders, width: { size: 3000, type: WidthType.DXA },
       shading: { fill: SHADE, type: ShadingType.CLEAR },
-      margins: { top: 80, bottom: 80, left: 140, right: 140 },
-      children: [p(run(k, { bold: true, size: 21 }))] }),
+      margins: { top: 30, bottom: 30, left: 130, right: 130 },
+      children: [cellPara(run(k, { bold: true, size: 20 }))] }),
     new TableCell({ borders, width: { size: 6360, type: WidthType.DXA },
-      margins: { top: 80, bottom: 80, left: 140, right: 140 },
-      children: [p(run(v, { size: 21, bold: !!opts.bold, color: opts.color }))] }),
+      margins: { top: 30, bottom: 30, left: 130, right: 130 },
+      children: [cellPara(run(v, { size: 20, bold: !!opts.bold, color: opts.color }))] }),
   ]});
 }
 
 function build(d) {
-  // 明細行（値が空の項目は自動でスキップ）
   const rowDefs = [
     ["物 件 名", d["物件名"]],
     ["所 在 地", d["所在地"]],
@@ -74,38 +76,37 @@ function build(d) {
   ];
 
   const children = [
-    p(run("買 付 証 明 書", { bold: true, size: 36 }), { alignment: AlignmentType.CENTER, spacing: { after: 240 } }),
-    new Paragraph({ children: [new TextRun({ text: "\t" + (d["作成日"] || ""), font: FONT, size: 21 })],
-      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }], spacing: { after: 240 } }),
-    p(run(d["宛先"] || "御中", { size: 22, bold: true }), { spacing: { after: 60 } }),
+    p(run("買 付 証 明 書", { bold: true, size: 30 }),
+      { alignment: AlignmentType.CENTER, spacing: { after: 120, line: 300 } }),
+    new Paragraph({ children: [new TextRun({ text: "\t" + (d["作成日"] || ""), font: FONT, size: 20 })],
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }], spacing: { after: 120 } }),
+    p(run(d["宛先"] || "御中", { size: 21, bold: true }), { spacing: { after: d["宛先担当"] ? 20 : 120 } }),
   ];
-  if (d["宛先担当"]) children.push(p(run(d["宛先担当"], { size: 20 }), { spacing: { after: 240 } }));
-  else children.push(p(run("", { size: 8 }), { spacing: { after: 180 } }));
+  if (d["宛先担当"]) children.push(p(run(d["宛先担当"], { size: 19 }), { spacing: { after: 120 } }));
 
   children.push(
     leftTab("買主（申込人）"),
     leftTab("住　所：" + (d["買主住所"] || "________________________________")),
     leftTab("氏　名：" + (d["買主氏名"] || "________________________") + "　㊞"),
     leftTab("連絡先：" + (d["連絡先"] || "") + (d["TEL"] ? "　TEL " + d["TEL"] : "")),
-    p(run("", { size: 8 }), { spacing: { after: 180 } }),
-    p(run("　私は、下記不動産を下記条件にて購入したく、本書をもって買付の意思表示をいたします。", { size: 21 }), { spacing: { after: 180 } }),
-    p(run("記", { bold: true, size: 22 }), { alignment: AlignmentType.CENTER, spacing: { after: 180 } }),
+    p(run("　私は、下記不動産を下記条件にて購入したく、本書をもって買付の意思表示をいたします。", { size: 20 }),
+      { spacing: { before: 120, after: 100, line: 252 } }),
+    p(run("記", { bold: true, size: 21 }), { alignment: AlignmentType.CENTER, spacing: { after: 100 } }),
     table,
-    p(run("", { size: 8 }), { spacing: { after: 120 } }),
-    p(run("【特記事項】", { bold: true, size: 21 }), { spacing: { after: 60 } }),
+    p(run("【特記事項】", { bold: true, size: 19 }), { spacing: { before: 140, after: 40 } }),
   );
-  notes.forEach(n => children.push(p(run("・" + n, { size: 20 }), { spacing: { after: 60 } })));
+  notes.forEach(n => children.push(
+    p(run("・" + n, { size: 17 }), { spacing: { after: 30, line: 234 } })));
   children.push(
-    p(run("", { size: 8 }), { spacing: { after: 120 } }),
-    new Paragraph({ children: [new TextRun({ text: "\t以　上", font: FONT, size: 21 })],
-      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }] }),
+    new Paragraph({ children: [new TextRun({ text: "\t以　上", font: FONT, size: 20 })],
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }], spacing: { before: 120 } }),
   );
 
   return new Document({
-    styles: { default: { document: { run: { font: FONT, size: 21 } } } },
+    styles: { default: { document: { run: { font: FONT, size: 20 } } } },
     sections: [{
       properties: { page: { size: { width: 11906, height: 16838 },
-        margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
+        margin: { top: 760, right: 1080, bottom: 680, left: 1080 } } },
       children,
     }],
   });
@@ -116,7 +117,7 @@ function main() {
   if (!paramsPath) { console.error("usage: node generate.js params.json [out.docx]"); process.exit(1); }
   const d = JSON.parse(fs.readFileSync(paramsPath, "utf-8"));
   if (d["全角変換"]) {
-    ["土地面積","建物面積","購入希望価格","手付金","残代金"].forEach(k => { if (d[k]) d[k] = toZenkaku(d[k]); });
+    ["土地面積", "建物面積", "購入希望価格", "手付金", "残代金"].forEach(k => { if (d[k]) d[k] = toZenkaku(d[k]); });
   }
   let out = process.argv[3] || d["出力ファイル名"];
   if (!out) {
