@@ -89,6 +89,12 @@
 - 各部署からの提案 → 社長が判断・承認
 - 毎朝の部署会議議事録を社長に提示
 
+## スキル / Skills
+- **hazard-check（ハザード確認）:** 住所から重ねるハザードマップ（洪水・土砂・津波・高潮等）の該当状況と標高を自動判定
+  - 本体: `.claude/skills/hazard-check/`（Claude Code環境では自動読込）
+  - claude.ai / iPhone / デスクトップ用: `docs/20260703_スキル配布_ハザード確認.zip` をclaude.aiのスキル設定にアップロード
+  - 設定手順: `docs/20260703_スキル設定_ハザード確認4環境.md`
+
 ## 接続済みコネクタ / Connected Tools
 - Gmail（不動産会社からのメール受信）
 - Google Calendar（予定管理）
