@@ -94,6 +94,9 @@
   - 本体: `.claude/skills/hazard-check/`（Claude Code環境では自動読込）
   - claude.ai / iPhone / デスクトップ用: `docs/20260703_スキル配布_ハザード確認.zip` をclaude.aiのスキル設定にアップロード
   - 設定手順: `docs/20260703_スキル設定_ハザード確認4環境.md`
+- **rosenka-lookup（路線価・積算評価）:** 所在地から国税庁路線価を調べ、積算評価額と積算率（基準50%以上）を算出
+  - 本体: `.claude/skills/rosenka-lookup/`（Claude Code環境では自動読込）
+  - claude.ai / iPhone / デスクトップ用: `docs/20260704_スキル配布_路線価積算評価.zip` をclaude.aiのスキル設定にアップロード（設定手順はハザード確認と同じ）
 
 ## 接続済みコネクタ / Connected Tools
 - Gmail（不動産会社からのメール受信）
