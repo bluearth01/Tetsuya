@@ -1,0 +1,9 @@
+{
+  "name": "kaitsuke-shomei",
+  "version": "1.0.0",
+  "private": true,
+  "description": "買付証明書(不動産購入申込書) .docx generator",
+  "dependencies": {
+    "docx": "^9.0.0"
+  }
+}
